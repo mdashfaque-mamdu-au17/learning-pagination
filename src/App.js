@@ -1,25 +1,51 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import { getData, columns, formatRowData } from "./components/data";
+import Table from "./components/Table";
+import Pagination from "./components/Paginate";
 
-function App() {
+const HomePage = () => {
+  const [pageData, setPageData] = useState({
+    rowData: [],
+    isLoading: false,
+    totalPages: 0,
+    totalPassengers: 0,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  useEffect(() => {
+    setPageData((prevState) => ({
+      ...prevState,
+      rowData: [],
+      isLoading: true,
+    }));
+    getData(currentPage).then((info) => {
+      console.log(info);
+      const { totalPages, totalPassengers, data } = info;
+      setPageData({
+        isLoading: false,
+        rowData: formatRowData(data),
+        totalPages,
+        totalPassengers: 150,
+      });
+    });
+  }, [currentPage]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <p>Total Passengers: {pageData.totalPassengers || "Loading..."}</p>
+      <div style={{ height: "600px" }}>
+        <Table
+          columns={columns}
+          data={pageData.rowData}
+          isLoading={pageData.isLoading}
+        />
+      </div>
+      <Pagination
+        totalRows={pageData.totalPages}
+        pageChangeHandler={setCurrentPage}
+        rowsPerPage={15}
+      />
     </div>
   );
-}
+};
 
-export default App;
+export default HomePage;
